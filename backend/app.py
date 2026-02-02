@@ -274,8 +274,13 @@ def send_email_with_pdf(name, to_email, pdf_data):
 
     msg.add_attachment(pdf_data, maintype='application', subtype='pdf', filename='TripTacticx_TravelPlan.pdf')
 
+    if not EMAIL_ADDRESS or not EMAIL_PASSWORD:
+        print("Skipping email: No credentials configured.")
+        return False
+
     try:
-        with smtplib.SMTP_SSL('smtp.gmail.com', 465) as smtp:
+        # 10 second timeout to prevent worker hang
+        with smtplib.SMTP_SSL('smtp.gmail.com', 465, timeout=10) as smtp:
             smtp.login(EMAIL_ADDRESS, EMAIL_PASSWORD)
             smtp.send_message(msg)
         return True
