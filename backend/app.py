@@ -371,6 +371,7 @@ def plan_trip():
         preferences = data.get('preferences', '')
         source_location = data.get('source_location')
         whatsapp_number = data.get('whatsapp_number')
+        transport_mode = data.get('transport_mode', 'Flight')
 
         # Basic validations
         if not all([name, email, destination, start_date_str, end_date_str, group_size_str, budget_input, trip_type, source_location]):
@@ -400,7 +401,8 @@ def plan_trip():
             budget=budget,
             trip_type=trip_type,
             preferences=preferences,
-            source_location=source_location
+            source_location=source_location,
+            transport_mode=transport_mode
         )
         
         # Save to DB
