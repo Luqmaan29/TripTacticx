@@ -24,4 +24,4 @@ EXPOSE 10000
 # Run commands
 # 1. Fix DB (Initialize if needed)
 # 2. Run Gunicorn
-CMD ["sh", "-c", "cd backend && python3 fix_db.py && gunicorn app:app --bind 0.0.0.0:$PORT"]
+CMD ["sh", "-c", "cd backend && python3 fix_db.py && gunicorn app:app --workers 1 --threads 8 --timeout 120 --bind 0.0.0.0:$PORT"]
