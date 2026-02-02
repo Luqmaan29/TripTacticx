@@ -263,8 +263,7 @@ def send_email_with_pdf(name, to_email, pdf_data):
     EMAIL_PASSWORD = os.environ.get('EMAIL_PASSWORD')
 
     if not EMAIL_ADDRESS or not EMAIL_PASSWORD:
-        print("Email credentials not set!")
-        return False
+        return False, "Email not configured (Secrets missing)", True
 
     msg = EmailMessage()
     msg['Subject'] = f"Your TripTacticx Travel Plan, {name}"
@@ -274,19 +273,15 @@ def send_email_with_pdf(name, to_email, pdf_data):
 
     msg.add_attachment(pdf_data, maintype='application', subtype='pdf', filename='TripTacticx_TravelPlan.pdf')
 
-    if not EMAIL_ADDRESS or not EMAIL_PASSWORD:
-        print("Skipping email: No credentials configured.")
-        return False
-
     try:
         # 10 second timeout to prevent worker hang
         with smtplib.SMTP_SSL('smtp.gmail.com', 465, timeout=10) as smtp:
             smtp.login(EMAIL_ADDRESS, EMAIL_PASSWORD)
             smtp.send_message(msg)
-        return True
+        return True, "Email sent successfully", False
     except Exception as e:
         print(f"Email sending failed: {e}")
-        return False
+        return False, str(e), False
 
 # ================= AUTH ROUTES =================
 
@@ -438,12 +433,12 @@ def plan_trip():
         email_sent = False
         email_error = None
         if pdf_data:
-            email_sent = send_email_with_pdf(name, email, pdf_data)
+            success, msg, skipped = send_email_with_pdf(name, email, pdf_data)
+            email_sent = success
+            if not success:
+               email_error = msg
         else:
             email_error = "PDF Generation Failed: " + (pdf_error if pdf_error else "Unknown Error")
-
-        if pdf_data and not email_sent:
-             email_error = "PDF generated but email sending failed. Check server logs."
 
         return jsonify({
             'summary': summary,
