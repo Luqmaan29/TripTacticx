@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Portal - TripTacticx</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <video autoplay muted loop id="bg-video">
+        <source src="bg_video.mp4" type="video/mp4">
+    </video>
+    <div id="overlay"></div>
+
+    <nav class="navbar">
+        <div class="logo">TRIPTACTICX ADMIN</div>
+        <div class="nav-links">
+            <a href="index.html" class="nav-btn">Home</a>
+            <button onclick="logout()" class="nav-btn">Logout</button>
+        </div>
+    </nav>
+
+    <div class="centered-container" style="display: block;">
+        <div class="triptacticx-card" style="max-width: 1000px; margin: 0 auto;">
+            <div class="triptacticx-title">Admin Dashboard</div>
+
+            <div class="section">
+                <h3>User Management</h3>
+                <div style="overflow-x: auto;">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Admin</th>
+                            </tr>
+                        </thead>
+                        <tbody id="userTableBody">
+                            <!-- Populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="section">
+                <h3>Trip Management</h3>
+                <div style="overflow-x: auto;">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>User Name</th>
+                                <th>Email</th>
+                                <th>WhatsApp</th>
+                                <th>Destination</th>
+                                <th>Budget</th>
+                                <th>Created At</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tripTableBody">
+                            <!-- Populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        async function checkAdminAccess() {
+            try {
+                const res = await fetch('/check-auth');
+                const data = await res.json();
+
+                if (!data.authenticated || !data.user.is_admin) {
+                    alert('Access Denied. Admins only.');
+                    window.location.href = 'index.html';
+                } else {
+                    fetchUsers();
+                    fetchTrips();
+                }
+            } catch (err) {
+                window.location.href = 'index.html';
+            }
+        }
+
+        async function fetchUsers() {
+            try {
+                const res = await fetch('/api/admin/users');
+                const users = await res.json();
+                if (users.error) return; // Handle auth error
+
+                const tbody = document.getElementById('userTableBody');
+                tbody.innerHTML = users.map(u => `
+          <tr>
+            <td>${u.id}</td>
+            <td>${u.name}</td>
+            <td>${u.email}</td>
+            <td>${u.is_admin ? '✅' : '❌'}</td>
+          </tr>
+        `).join('');
+            } catch (e) { console.error(e); }
+        }
+
+        async function fetchTrips() {
+            try {
+                const res = await fetch('/api/admin/trips');
+                const trips = await res.json();
+                if (trips.error) return;
+
+                const tbody = document.getElementById('tripTableBody');
+                tbody.innerHTML = trips.map(t => `
+          <tr>
+            <td>${t.id}</td>
+            <td>${t.user_name}</td>
+            <td>${t.user_email}</td>
+            <td>${t.whatsapp_number || '-'}</td>
+            <td>${t.destination}</td>
+            <td>₹${t.budget}</td>
+            <td>${t.created_at}</td>
+          </tr>
+        `).join('');
+            } catch (e) { console.error(e); }
+        }
+
+        async function logout() {
+            await fetch('/logout', { method: 'POST' });
+            window.location.href = 'login.html';
+        }
+
+        // Init
+        checkAdminAccess();
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up - TripTacticx</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <video autoplay muted loop id="bg-video">
+        <source src="bg_video.mp4" type="video/mp4">
+    </video>
+    <div id="overlay"></div>
+
+    <div class="centered-container">
+        <div class="triptacticx-card" style="max-width: 400px;">
+            <div class="triptacticx-title">TRIP TACTICX</div>
+
+            <!-- Role Tabs -->
+            <div
+                style="display: flex; background: rgba(0,0,0,0.3); padding: 4px; border-radius: 12px; margin-bottom: 24px; border: 1px solid var(--glass-border);">
+                <button id="tab-traveller" class="role-tab active" onclick="switchTab('traveller')"
+                    style="flex: 1; padding: 10px; border: none; background: transparent; color: white; cursor: pointer; border-radius: 8px; font-weight: 600;">Traveller</button>
+                <button id="tab-admin" class="role-tab" onclick="switchTab('admin')"
+                    style="flex: 1; padding: 10px; border: none; background: transparent; color: var(--text-muted); cursor: pointer; border-radius: 8px; font-weight: 600;">Admin</button>
+            </div>
+
+            <form id="signupForm" class="form-grid" style="grid-template-columns: 1fr;">
+                <div class="form-field">
+                    <label>Full Name</label>
+                    <input type="text" id="name" required>
+                </div>
+                <div class="form-field">
+                    <label>Email</label>
+                    <input type="email" id="email" required>
+                </div>
+                <div class="form-field">
+                    <label>Password</label>
+                    <input type="password" id="password" required>
+                </div>
+
+                <!-- Secret Key - Visible only for Admin Tab -->
+                <div class="form-field" id="secret-field" style="display: none;">
+                    <label style="color: var(--primary-color);">Admin Secret Key</label>
+                    <input type="password" id="admin_secret" placeholder="Enter secret code...">
+                </div>
+
+                <button type="submit" class="triptacticx-btn">Create Account</button>
+            </form>
+            <div style="text-align: center; margin-top: 20px;">
+                <p style="color: var(--text-muted);">Already have an account? <a href="login.html"
+                        style="color: var(--primary-color);">Login</a></p>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .role-tab.active {
+            background: var(--primary-color) !important;
+            color: black !important;
+        }
+    </style>
+
+    <script>
+        let currentRole = 'traveller';
+
+        function switchTab(role) {
+            currentRole = role;
+            document.getElementById('tab-traveller').className = role === 'traveller' ? 'role-tab active' : 'role-tab';
+            document.getElementById('tab-admin').className = role === 'admin' ? 'role-tab active' : 'role-tab';
+            document.getElementById('tab-admin').style.color = role === 'admin' ? 'black' : '#94a3b8';
+
+            // Toggle Secret Field
+            document.getElementById('secret-field').style.display = role === 'admin' ? 'flex' : 'none';
+
+            const btn = document.querySelector('.triptacticx-btn');
+            btn.innerText = role === 'admin' ? 'Register as Admin' : 'Create Account';
+        }
+
+        document.getElementById('signupForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = document.getElementById('name').value;
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const admin_secret = document.getElementById('admin_secret').value;
+
+            try {
+                const res = await fetch('/signup', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, email, password, admin_secret, role: currentRole })
+                });
+                const data = await res.json();
+
+                if (res.ok) {
+                    alert('Account created! Please login.');
+                    window.location.href = 'login.html';
+                } else {
+                    alert(data.error);
+                }
+            } catch (err) {
+                alert('Signup failed. Ensure backend is running.');
+            }
+        });
+    </script>
+</body>
+
+</html>

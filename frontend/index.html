@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>TripTacticx Travel Planner</title>
+  <link rel="icon" type="image/png" href="logo.png">
+  <link rel="stylesheet" href="style.css" />
+  <!-- Leaflet Map -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+</head>
+
+<body>
+
+  <video autoplay muted loop id="bg-video">
+    <source src="bg_video.mp4" type="video/mp4">
+    Your browser does not support the video tag.
+  </video>
+
+  <div id="overlay"></div>
+
+  <!-- Navbar -->
+  <nav class="navbar" id="navbar">
+    <div class="logo">TRIPTACTICX</div>
+    <div class="nav-links" id="navLinks">
+      <!-- Injected by JS based on auth state -->
+      <a href="login.html" class="nav-btn">Login</a>
+      <a href="signup.html" class="nav-btn">Sign Up</a>
+    </div>
+  </nav>
+
+  <div class="centered-container" id="mainContainer" style="display: none;">
+    <div class="triptacticx-card">
+      <div class="triptacticx-title">TRIP TACTICX</div>
+      <form id="tripForm" class="form-grid" novalidate>
+
+        <!-- Row 1 -->
+        <div class="form-field">
+          <label for="name">Name</label>
+          <input type="text" id="name" name="name" required autocomplete="name" />
+        </div>
+
+        <div class="form-field">
+          <label>Email Address</label>
+          <input type="email" id="email" placeholder="e.g. hello@example.com" required>
+        </div>
+
+        <!-- Row 2 -->
+        <div class="form-field">
+          <label>WhatsApp Number</label>
+          <input type="tel" id="whatsapp" placeholder="e.g. +91 9876543210">
+        </div>
+
+        <div class="form-field">
+          <label for="source_location">Current Location</label>
+          <input type="text" id="source_location" name="source_location" required />
+        </div>
+
+        <!-- Row 3: Dates -->
+        <div class="form-row" style="grid-column: 1 / -1; display: flex; gap: 20px;">
+          <div class="form-field" style="flex: 1;">
+            <label for="start_date">Start Date</label>
+            <input type="date" id="start_date" name="start_date" required />
+          </div>
+          <div class="form-field" style="flex: 1;">
+            <label for="end_date">End Date</label>
+            <input type="date" id="end_date" name="end_date" required />
+          </div>
+        </div>
+
+        <!-- Row 4: Destination -->
+        <div class="form-field full-width">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <label>Destination</label>
+            <button type="button" id="magicBtn" onclick="suggestDestination()"
+              style="background:none; border:1px solid var(--primary-color); color:var(--primary-color); border-radius:12px; padding:2px 10px; cursor:pointer; font-size:0.8rem; transition:0.3s;">
+              ✨ Suggest for Dates
+            </button>
+          </div>
+          <input type="text" id="destination" placeholder="Anywhere in India..." required>
+        </div>
+
+        <!-- Row 5 -->
+        <div class="form-field">
+          <label for="group_size">Group Size</label>
+          <input type="number" id="group_size" name="group_size" min="1" value="2" required />
+        </div>
+
+        <div class="form-field">
+          <label for="trip_type">Trip Type</label>
+          <select id="trip_type" name="trip_type" required>
+            <option value="Leisure">Leisure</option>
+            <option value="Adventure">Adventure</option>
+            <option value="Honeymoon">Honeymoon</option>
+            <option value="Solo">Solo</option>
+            <option value="Business">Business</option>
+          </select>
+        </div>
+
+        <!-- Row 6 -->
+        <div class="form-row" style="grid-column: 1 / -1; display: flex; gap: 20px;">
+          <div class="form-field" style="flex: 1;">
+            <label for="transport_mode">Mode of Transport</label>
+            <select id="transport_mode" name="transport_mode" required>
+              <option value="Flight">Flight ✈️</option>
+              <option value="Train">Train 🚂</option>
+              <option value="Bus">Bus 🚌</option>
+              <option value="Car">Car/Self-Drive 🚗</option>
+            </select>
+          </div>
+          <div class="form-field" style="flex: 1;">
+            <label for="budget">Budget per Person (₹)</label>
+            <input type="text" id="budget" name="budget" placeholder="15000" required />
+          </div>
+        </div>
+
+        <div class="form-field full-width">
+          <label for="preferences">Special Preferences</label>
+          <textarea id="preferences" name="preferences" rows="3" placeholder="Nature, culture, food..."></textarea>
+        </div>
+
+        <div class="full-width">
+          <button type="submit" class="triptacticx-btn">Plan My Trip</button>
+        </div>
+
+        <div class="full-width">
+          <div id="loader" style="display:none;"></div>
+          <section id="result"></section>
+
+          <!-- Smart Action Buttons -->
+          <div id="action-container"
+            style="margin-top:20px; display:flex; gap:15px; flex-wrap:wrap; justify-content:center;"></div>
+
+          <!-- Interactive Map -->
+          <div id="map-container"
+            style="height:350px; width:100%; margin-top:20px; border-radius:15px; border:1px solid rgba(255,255,255,0.2); display:none; z-index:1;">
+          </div>
+
+          <button id="resetBtn" type="button" class="triptacticx-btn"
+            style="display:none; background: linear-gradient(135deg, #ef4444, #b91c1c); margin-top:20px;">Plan
+            Another</button>
+          <button id="downloadPdfBtn" type="button" class="triptacticx-btn"
+            style="display:none; margin-top:12px;">Download PDF</button>
+        </div>
+      </form>
+    </div>
+    <!-- Compass Chat Widget -->
+    <div id="compass-widget">
+      <button id="compass-btn" onclick="toggleCompass()">
+        🧭
+      </button>
+      <div id="compass-window">
+        <div class="compass-header">
+          <span>Compass AI 🧭</span>
+          <span onclick="toggleCompass()" style="cursor:pointer;">&times;</span>
+        </div>
+        <div id="compass-messages">
+          <div class="msg bot">Hi! I'm Compass. Not sure where to go? Tell me what kind of trip you're looking for! 🇮🇳
+          </div>
+        </div>
+        <div class="compass-input-area">
+          <input type="text" id="compass-input" placeholder="Type a message..." onkeypress="handleCompassKey(event)">
+          <button onclick="sendCompassMessage()">→</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- My Trips Modal -->
+    <div id="myTripsModal" class="modal">
+      <div class="modal-content">
+        <span class="close-button" onclick="closeModal()">&times;</span>
+        <h2 style="color: var(--primary-color); margin-bottom: 20px;">My Trip History</h2>
+        <div id="tripsList" style="display: flex; flex-direction: column; gap: 15px;">
+          <!-- Filled by JS -->
+        </div>
+      </div>
+    </div>
+
+    <script src="script.js?v=2"></script>
+</body>
+
+</html>
