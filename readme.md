@@ -38,6 +38,59 @@ The brain of TripTacticx is located in `backend/agents/`. Each agent is an indep
 | **Logistics Agent** | Route optimization | Graph-based pathfinding |
 | **Budget Agent** | Cost estimation & optimization | Financial modeling |
 
+
+### 🧩 Architectural Diagrams
+
+#### System Logic Flow
+```mermaid
+graph TD
+    User[User] -->|Trip Request| API[Flask API]
+    API -->|Orchestrate| MA[Multi-Agent Orchestrator]
+    MA -->|Step 1: Financial Planning| BA[Budget Agent]
+    BA -->|Allocated Budgets| MA
+    MA -->|Step 2: Parallel Execution| AA[Agent Swarm]
+    subgraph AA [Agent Swarm]
+        direction TB
+        Bk[Booking Agent]
+        St[Stay Agent]
+        Fd[Food Agent]
+        Ex[Experience Agent]
+        Lg[Logistics Agent]
+    end
+    AA -->|Domain Results| Agg[Aggregator]
+    Agg -->|JSON & Summary| API
+    API -->|Generate| PDF[PDF Engine]
+    API -->|Send| Email[Email Service]
+```
+
+#### Execution Sequence
+```mermaid
+sequenceDiagram
+    actor U as User
+    participant F as Flask App
+    participant O as Orchestrator
+    participant B as Budget Agent
+    participant S as Specialist Agents
+    participant P as PDF Engine
+    
+    U->>F: POST /plan-trip
+    F->>O: run_multi_agent()
+    O->>B: Analyze Budget
+    B-->>O: Category Breakdown
+    par Agent Execution
+        O->>S: Booking Agent
+        O->>S: Stay Agent
+        O->>S: Food Agent
+        O->>S: Experience Agent
+        O->>S: Logistics Agent
+    end
+    S-->>O: Specialized Recommendations
+    O-->>F: Aggregated Itinerary
+    F->>P: Generate PDF
+    P-->>F: PDF Binary
+    F->>U: Email Itinerary + JSON Response
+```
+
 ### Technology Stack
 
 *   **Backend:** Python 3, Flask, SQLAlchemy, Gunicorn
@@ -45,6 +98,7 @@ The brain of TripTacticx is located in `backend/agents/`. Each agent is an indep
 *   **Database:** SQLite (Dev) / PostgreSQL (Prod ready)
 *   **Frontend:** Vanilla HTML5, CSS3, JavaScript (Fetch API)
 *   **Utilities:** ReportLab (PDF), SMTP (Email), Python-Dotenv
+
 
 ---
 
