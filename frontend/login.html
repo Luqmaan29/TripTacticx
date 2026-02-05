@@ -80,26 +80,25 @@
 
         if (res.ok) {
           localStorage.setItem('user', JSON.stringify(data.user));
+          showModal('Welcome Back!', 'Login successful. Accessing dashboard...', 'success');
 
-          if (currentRole === 'admin') {
-            if (data.user.is_admin) {
-              window.location.href = 'admin.html';
-            } else {
-              alert("You are not an admin!");
-            }
-          } else {
-            if (data.user.is_admin) {
-              // Admins logging in as travellers goes to home
-              window.location.href = 'index.html';
+          setTimeout(() => {
+            if (currentRole === 'admin') {
+              if (data.user.is_admin) {
+                window.location.href = 'admin.html';
+              } else {
+                showModal('Access Denied', 'You are not an admin!', 'error');
+              }
             } else {
               window.location.href = 'index.html';
             }
-          }
+          }, 1500);
+
         } else {
-          alert(data.error);
+          showModal('Login Failed', data.error, 'error');
         }
       } catch (err) {
-        alert('Login failed. Ensure backend is running.');
+        showModal('Connection Error', 'Could not reach the server.', 'error');
       }
     });
 

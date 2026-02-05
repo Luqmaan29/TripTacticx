@@ -3,6 +3,56 @@
  * Handles News Ticker & Atlas AI Chatbot across all pages.
  */
 
+// Global Modal System
+window.showModal = function (title, message, type = 'success') {
+    let modal = document.getElementById('globalModal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'globalModal';
+        modal.className = 'modal';
+        document.body.appendChild(modal);
+    }
+
+    // Config based on type
+    const config = {
+        success: { icon: '✓', color: '#10b981', bg: 'rgba(16, 185, 129, 0.1)' },
+        error: { icon: '✕', color: '#ef4444', bg: 'rgba(239, 68, 68, 0.1)' },
+        info: { icon: 'ℹ', color: '#3b82f6', bg: 'rgba(59, 130, 246, 0.1)' }
+    };
+    const style = config[type] || config.success;
+
+    modal.innerHTML = `
+        <div class="modal-content" style="max-width: 400px; text-align: center; border-color: ${style.color};">
+            <div class="success-icon" style="color: ${style.color}; font-size: 3rem; margin-bottom: 10px;">${style.icon}</div>
+            <h2 style="color: white; margin-bottom: 10px;">${title}</h2>
+            <p style="color: var(--text-muted); margin-bottom: 20px; line-height: 1.5;">${message}</p>
+            
+            <div style="height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; overflow: hidden;">
+                <div style="height: 100%; background: ${style.color}; width: 100%; animation: countDown 4s linear forwards;"></div>
+            </div>
+            <style>
+                @keyframes countDown { from { width: 100%; } to { width: 0%; } }
+            </style>
+             <button onclick="document.getElementById('globalModal').style.display='none'" 
+                style="margin-top: 20px; background: transparent; border: 1px solid ${style.color}; color: ${style.color}; padding: 8px 16px; border-radius: 20px; cursor: pointer;">
+                Dismiss
+            </button>
+        </div>
+    `;
+
+    modal.style.display = 'flex';
+
+    // Auto close
+    const time = type === 'error' ? 6000 : 4000; // Errors stay longer
+    setTimeout(() => {
+        if (modal.style.display === 'flex') modal.style.display = 'none';
+    }, time);
+
+    modal.onclick = (e) => {
+        if (e.target === modal) modal.style.display = 'none';
+    };
+};
+
 /* ================= COMPASS / ATLAS CHATBOT ================= */
 let isCompassOpen = false;
 let chatHistory = [];

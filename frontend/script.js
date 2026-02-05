@@ -90,14 +90,15 @@ if (contactForm) {
         body: JSON.stringify(data)
       });
       if (res.ok) {
-        showSuccessModal(data.name);
+        showModal('Message Sent!', `Thanks ${data.name.split(' ')[0]}, we'll get back to you shortly.`, 'success');
         contactForm.reset();
       } else {
-        alert("Failed to send message.");
+        showModal('Delivery Failed', 'Failed to send message.', 'error');
       }
+
     } catch (err) {
       console.error(err);
-      alert("Error sending message.");
+      showModal('Delivery Failed', 'Error sending message.', 'error');
     } finally {
       if (btn) {
         btn.innerText = originalText;
@@ -107,45 +108,7 @@ if (contactForm) {
   });
 }
 
-function showSuccessModal(name) {
-  let modal = document.getElementById('successModal');
-  if (!modal) {
-    modal = document.createElement('div');
-    modal.id = 'successModal';
-    modal.className = 'modal';
-    document.body.appendChild(modal);
-  }
-
-  const firstName = name.split(' ')[0];
-
-  modal.innerHTML = `
-        <div class="modal-content" style="max-width: 400px; text-align: center; border-color: #10b981;">
-            <div class="success-icon">✓</div>
-            <h2 style="color: white; margin-bottom: 10px;">Message Sent!</h2>
-            <p style="color: var(--text-muted); margin-bottom: 20px;">
-                Thanks, ${firstName}. We've received your query and will get back to you shortly.
-            </p>
-            <div style="height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; overflow: hidden;">
-                <div style="height: 100%; background: #10b981; width: 100%; animation: countDown 5s linear forwards;"></div>
-            </div>
-            <style>
-                @keyframes countDown { from { width: 100%; } to { width: 0%; } }
-            </style>
-        </div>
-    `;
-
-  modal.style.display = 'flex';
-
-  // Auto close after 5 seconds
-  setTimeout(() => {
-    modal.style.display = 'none';
-  }, 5000);
-
-  // Close on click outside
-  modal.onclick = (e) => {
-    if (e.target === modal) modal.style.display = 'none';
-  };
-}
+// showSuccessModal removed -> using global showModal in shared_ui.js
 
 function autoFillForm() {
   if (currentUser) {
@@ -258,8 +221,8 @@ form.addEventListener('submit', async function (e) {
   e.preventDefault();
 
   if (!currentUser) {
-    alert("Please login to plan a trip!");
-    window.location.href = 'login.html';
+    showModal('Login Required', 'Please login to plan a trip!', 'info');
+    setTimeout(() => { window.location.href = 'login.html'; }, 2000);
     return;
   }
 
@@ -323,7 +286,7 @@ form.addEventListener('submit', async function (e) {
     loaderDiv.style.display = 'none';
     submitBtn.disabled = false;
     submitBtn.style.opacity = '1';
-    alert(error.message);
+    showModal('Planning Failed', error.message, 'error');
   }
 });
 
@@ -351,8 +314,9 @@ function displayResult(result, formData) {
   downloadPdfBtn.style.display = 'inline-block';
 
   // Trigger Map & Smart Actions
+  // Trigger Map & Smart Actions
   if (formData) {
-    renderSmartActions(formData.destination, formData.start_date, formData.end_date);
+    renderSmartActions(formData.destination, formData.start_date, formData.end_date, formData.transport_mode);
   }
 }
 
@@ -372,7 +336,7 @@ resetBtn.addEventListener('click', () => {
 });
 
 downloadPdfBtn.addEventListener('click', async () => {
-  alert("The PDF has been sent to your email!");
+  showModal('PDF On The Way!', "The PDF has been sent to your email.", 'info');
 });
 
 // Initialize
@@ -395,7 +359,7 @@ async function suggestDestination() {
   const btn = document.getElementById('magicBtn');
 
   if (!startDate) {
-    alert("Please select a Start Date first!");
+    showModal('Missing Date', "Please select a Start Date first!", 'info');
     return;
   }
 
@@ -418,12 +382,12 @@ async function suggestDestination() {
     if (data.suggestions && Array.isArray(data.suggestions)) {
       showSuggestionsModal(data.suggestions);
     } else {
-      alert("Could not find suggestions. Please try again.");
+      showModal('No Suggestions', "Could not find suggestions. Please try again.", 'info');
     }
 
   } catch (err) {
     console.error(err);
-    alert("Error getting suggestions. Try again.");
+    showModal('AI Error', "Error getting suggestions. Try again.", 'error');
   } finally {
     btn.innerHTML = originalText;
     btn.disabled = false;
@@ -486,3 +450,44 @@ window.addEventListener('click', function (event) {
     modal.style.display = 'none';
   }
 });
+
+function renderSmartActions(destination, startDate, endDate, transportMode = 'Flight') {
+  const container = document.getElementById('action-container');
+  if (!container) return;
+
+  container.innerHTML = '';
+  const source = document.getElementById('source_location').value || 'India';
+
+  // Dynamic Transport Button
+  const transportBtn = document.createElement('a');
+  transportBtn.target = '_blank';
+  transportBtn.className = 'action-btn flight'; // Reusing 'flight' class for styling base
+
+  if (transportMode === 'Flight') {
+    transportBtn.href = `https://www.google.com/travel/flights?q=flights+to+${destination}+from+${source}+on+${startDate}`;
+    transportBtn.innerHTML = '✈️ Book Flights';
+  } else if (transportMode === 'Train') {
+    transportBtn.href = `https://www.google.com/search?q=trains+to+${destination}+from+${source}`;
+    transportBtn.innerHTML = '🚂 Book Trains';
+  } else if (transportMode === 'Bus') {
+    transportBtn.href = `https://www.redbus.in/search?fromCityName=${source}&toCityName=${destination}&onward=${startDate}`;
+    transportBtn.innerHTML = '🚌 Book Bus';
+  } else if (transportMode === 'Car') {
+    transportBtn.href = `https://www.google.com/maps/dir/${source}/${destination}`;
+    transportBtn.innerHTML = '🚗 View Route';
+  } else {
+    // Default to flight if unknown
+    transportBtn.href = `https://www.google.com/travel/flights?q=flights+to+${destination}+from+${source}`;
+    transportBtn.innerHTML = '✈️ Book Flights';
+  }
+
+  // Hotel Button (Always shown)
+  const hotelBtn = document.createElement('a');
+  hotelBtn.href = `https://www.google.com/travel/hotels?q=hotels+in+${destination}`;
+  hotelBtn.target = '_blank';
+  hotelBtn.className = 'action-btn hotel';
+  hotelBtn.innerHTML = '🏨 Book Hotels';
+
+  container.appendChild(transportBtn);
+  container.appendChild(hotelBtn);
+}

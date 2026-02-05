@@ -93,13 +93,15 @@
                 const data = await res.json();
 
                 if (res.ok) {
-                    alert('Account created! Please login.');
-                    window.location.href = 'login.html';
+                    showModal('Welcome Aboard!', 'Account created successfully. Redirecting to login...', 'success');
+                    setTimeout(() => {
+                        window.location.href = 'login.html';
+                    }, 2000);
                 } else {
-                    alert(data.error);
+                    showModal('Signup Failed', data.error, 'error');
                 }
             } catch (err) {
-                alert('Signup failed. Ensure backend is running.');
+                showModal('Connection Error', 'Could not reach the server. Please check your internet.', 'error');
             }
         });
     </script>
