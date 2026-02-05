@@ -16,12 +16,7 @@
 
 <body>
 
-  <video autoplay muted loop id="bg-video">
-    <source src="bg_video.mp4" type="video/mp4">
-    Your browser does not support the video tag.
-  </video>
-
-  <div id="overlay"></div>
+  <!-- Background is now handled by CSS body gradient -->
 
   <!-- Navbar -->
   <nav class="navbar" id="navbar">
@@ -33,6 +28,143 @@
     </div>
   </nav>
 
+  <!-- LANDING PAGE (Visible to Guests) -->
+  <!-- LANDING PAGE (Visible to Guests) -->
+  <div id="landing-page">
+
+    <!-- Hero Section -->
+    <header class="hero-section">
+      <div class="hero-content">
+        <h1 class="hero-title">The Future of Exploration.</h1>
+        <p class="hero-subtitle">
+          TripTacticx isn't just a planner. It's an <strong>Autonomous Multi-Agent System</strong>.
+          We deploy a swarm of specialized AI Agents to negotiate, curate, and optimize your perfect journey in
+          milliseconds.
+        </p>
+        <div class="hero-buttons">
+          <a href="signup.html" class="cta-btn primary">Start Your Journey With Us</a>
+        </div>
+      </div>
+    </header>
+
+    <!-- About Section -->
+    <section id="about-section" class="glass-section">
+      <h2 class="section-title">About TripTacticx</h2>
+
+      <div
+        style="max-width: 800px; margin: 0 auto 50px auto; text-align: left; line-height: 1.8; color: var(--text-muted);">
+        <p style="margin-bottom: 20px;">
+          <strong>Triptacticx</strong> is an AI powered travel planning platform designed to simplify and streamline the
+          way people plan trips.
+        </p>
+        <p style="margin-bottom: 20px;">
+          Modern travel planning often requires travellers to navigate multiple platforms for flights, accommodations,
+          activities, budgeting, and scheduling. This fragmented process increases effort, time, and decision fatigue.
+          Triptacticx addresses this challenge by bringing the entire planning experience into a single intelligent
+          system.
+        </p>
+        <p style="margin-bottom: 40px;">
+          Built using a multi-agent AI architecture, Triptacticx generates personalized, end-to-end travel itineraries
+          based on traveller preferences, travel goals, budget constraints, and timelines. Each agent specializes in a
+          specific aspect of planning and works collaboratively to deliver accurate, structured, and optimized
+          recommendations.
+        </p>
+
+        <h3 style="color: white; font-size: 1.8rem; margin-bottom: 20px;">Our
+          Mission</h3>
+        <p style="margin-bottom: 40px;">
+          Our mission is to simplify travel planning through intelligent automation. We aim to replace manual and
+          fragmented planning workflows with a unified system that understands traveller intent and produces clear,
+          actionable travel plans.
+        </p>
+
+        <h3 style="color: white; font-size: 1.8rem; margin-bottom: 20px;">Our
+          Vision</h3>
+        <p style="margin-bottom: 40px;">
+          Our vision is to redefine how travel planning is experienced on a global scale. We envision Triptacticx
+          becoming a trusted digital travel companion that adapts to individual travellers, learns from preferences over
+          time, and consistently delivers high-quality planning outcomes.
+        </p>
+
+        <h3 style="color: white; font-size: 1.8rem; margin-bottom: 20px;">Our
+          Journey</h3>
+        <p style="margin-bottom: 40px;">
+          Triptacticx originated from firsthand experience with the challenges of frequent travel planning. What began
+          as a personal attempt to reduce planning effort evolved into a broader technical initiative focused on
+          multi-agent collaboration.
+        </p>
+      </div>
+
+      <h2 class="section-title" style="margin-bottom: 40px; font-size: 2rem;">Why TripTacticx</h2>
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="icon">🎯</div>
+          <h3>Centralized Planning</h3>
+          <p>Everything you need in one platform. No more switching between 10 different tabs.</p>
+        </div>
+        <div class="feature-card">
+          <div class="icon">🤖</div>
+          <h3>Multi-Agent AI</h3>
+          <p>Specialized AI agents working together to structure efficient and logical itineraries.</p>
+        </div>
+        <div class="feature-card">
+          <div class="icon">🎨</div>
+          <h3>Deep Personalization</h3>
+          <p>Driven by real traveller preferences, constraints, and distinct travel goals.</p>
+        </div>
+        <div class="feature-card">
+          <div class="icon">🌍</div>
+          <h3>By Travellers</h3>
+          <p>Designed by those who understand the real friction and challenges of modern travel.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Stats Section (New) -->
+    <section class="glass-section compact" style="display:flex; justify-content:space-around; text-align:center;">
+      <div>
+        <h3 style="font-size:2.5rem; color:var(--primary-color);">10k+</h3>
+        <p style="color:var(--text-muted);">Itineraries Generated</p>
+      </div>
+      <div>
+        <h3 style="font-size:2.5rem; color:var(--secondary-color);">99.9%</h3>
+        <p style="color:var(--text-muted);">System Uptime</p>
+      </div>
+      <div>
+        <h3 style="font-size:2.5rem; color:#10b981;">0s</h3>
+        <p style="color:var(--text-muted);">Human Latency</p>
+      </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact-section" class="glass-section compact">
+      <h2 class="section-title">Get in Touch</h2>
+      <div class="contact-content" style="max-width: 700px; margin: 0 auto; text-align: center;">
+        <p style="font-size: 1.1rem; line-height: 1.8; margin-bottom: 30px; color: #cbd5e1;">
+          We would love to hear from you! Whether you have a question about features, trials, pricing, or just want to
+          say hello, our team is ready to answer all your questions.
+        </p>
+      </div>
+      <form id="contactForm" style="display:flex; flex-direction:column; gap:15px; max-width:400px; margin:0 auto;">
+        <input type="text" id="contactName" placeholder="Your Name" required
+          style="padding:12px; border-radius:8px; border:1px solid rgba(255,255,255,0.2); background:rgba(0,0,0,0.3); color:white;">
+        <input type="email" id="contactEmail" placeholder="Your Email" required
+          style="padding:12px; border-radius:8px; border:1px solid rgba(255,255,255,0.2); background:rgba(0,0,0,0.3); color:white;">
+        <textarea id="contactMessage" rows="4" placeholder="How can we help?" required
+          style="padding:12px; border-radius:8px; border:1px solid rgba(255,255,255,0.2); background:rgba(0,0,0,0.3); color:white;"></textarea>
+        <button type="submit" class="cta-btn primary" style="border:none; cursor:pointer;">Send Message</button>
+      </form>
+    </section>
+
+    <!-- Footer -->
+    <!-- Footer -->
+    <footer class="landing-footer">
+      <p style="font-family: 'Playfair Display', serif; font-size: 1.2rem; letter-spacing: 1px;">&copy; 2026 TripTacticx
+        AI</p>
+    </footer>
+  </div>
+
+  <!-- USER DASHBOARD (Visible to Logged In) -->
   <div class="centered-container" id="mainContainer" style="display: none;">
     <div class="triptacticx-card">
       <div class="triptacticx-title">TRIP TACTICX</div>
@@ -148,39 +280,50 @@
         </div>
       </form>
     </div>
-    <!-- Compass Chat Widget -->
-    <div id="compass-widget">
-      <button id="compass-btn" onclick="toggleCompass()">
-        🧭
-      </button>
-      <div id="compass-window">
-        <div class="compass-header">
-          <span>Compass AI 🧭</span>
-          <span onclick="toggleCompass()" style="cursor:pointer;">&times;</span>
-        </div>
-        <div id="compass-messages">
-          <div class="msg bot">Hi! I'm Compass. Not sure where to go? Tell me what kind of trip you're looking for! 🇮🇳
-          </div>
-        </div>
-        <div class="compass-input-area">
-          <input type="text" id="compass-input" placeholder="Type a message..." onkeypress="handleCompassKey(event)">
-          <button onclick="sendCompassMessage()">→</button>
+  </div>
+
+  <!-- News Ticker (Global) -->
+  <div id="news-ticker-bar">
+    <div class="ticker-content" id="ticker-content">
+      <span>Loading latest travel updates...</span>
+    </div>
+  </div>
+
+  <!-- Compass Chat Widget (Global) -->
+  <div id="compass-widget">
+    <button id="compass-btn" onclick="toggleCompass()">
+      <span style="font-size: 1.5rem;">🧭</span>
+      <span>Atlas AI</span>
+    </button>
+    <div id="compass-window">
+      <div class="compass-header">
+        <span>Atlas AI 🧭</span>
+        <span onclick="toggleCompass()" style="cursor:pointer;">&times;</span>
+      </div>
+      <div id="compass-messages">
+        <div class="msg bot">Hi! I'm Atlas. Not sure where to go? Tell me what kind of trip you're looking for! 🇮🇳
         </div>
       </div>
-    </div>
-
-    <!-- My Trips Modal -->
-    <div id="myTripsModal" class="modal">
-      <div class="modal-content">
-        <span class="close-button" onclick="closeModal()">&times;</span>
-        <h2 style="color: var(--primary-color); margin-bottom: 20px;">My Trip History</h2>
-        <div id="tripsList" style="display: flex; flex-direction: column; gap: 15px;">
-          <!-- Filled by JS -->
-        </div>
+      <div class="compass-input-area">
+        <input type="text" id="compass-input" placeholder="Type a message..." onkeypress="handleCompassKey(event)">
+        <button onclick="sendCompassMessage()">→</button>
       </div>
     </div>
+  </div>
 
-    <script src="script.js?v=2"></script>
+  <!-- My Trips Modal -->
+  <div id="myTripsModal" class="modal">
+    <div class="modal-content">
+      <span class="close-button" onclick="closeModal()">&times;</span>
+      <h2 style="color: var(--primary-color); margin-bottom: 20px;">My Trip History</h2>
+      <div id="tripsList" style="display: flex; flex-direction: column; gap: 15px;">
+        <!-- Filled by JS -->
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js?v=2"></script>
+  <script src="shared_ui.js"></script>
 </body>
 
 </html>

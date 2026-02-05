@@ -17,7 +17,7 @@ def ask_groq(model_id, messages, temperature=0.7):
         response = client.chat.completions.create(
             model=model_id,
             messages=messages,
-            temperature=temperature
+            temperature=0.3
         )
         return response.choices[0].message.content
     except Exception as e:

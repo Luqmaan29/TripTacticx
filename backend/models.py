@@ -25,3 +25,10 @@ class Trip(db.Model):
     whatsapp_number = db.Column(db.String(20), nullable=True)
     details_json = db.Column(db.Text, nullable=True) # storing the full agent output
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+class ContactQuery(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    email = db.Column(db.String(100), nullable=False)
+    message = db.Column(db.Text, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)

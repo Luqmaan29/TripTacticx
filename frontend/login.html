@@ -10,14 +10,11 @@
 </head>
 
 <body>
-  <video autoplay muted loop id="bg-video">
-    <source src="bg_video.mp4" type="video/mp4">
-  </video>
-  <div id="overlay"></div>
+  <!-- Background video removed -->
 
   <div class="centered-container">
     <div class="triptacticx-card" style="max-width: 400px;">
-      <div class="triptacticx-title">TRIP TACTICX</div>
+      <div class="triptacticx-title">TRIPTACTICX</div>
 
       <!-- Role Tabs -->
       <div
@@ -39,6 +36,7 @@
         </div>
         <button type="submit" class="triptacticx-btn">Sign In</button>
       </form>
+
       <div style="text-align: center; margin-top: 20px;">
         <p style="color: var(--text-muted);">Don't have an account? <a href="signup.html"
             style="color: var(--primary-color);">Sign Up</a></p>
@@ -116,6 +114,36 @@
       } catch (e) { }
     })();
   </script>
+  <!-- News Ticker (Global) -->
+  <div id="news-ticker-bar">
+    <div class="ticker-content" id="ticker-content">
+      <span>Loading latest travel updates...</span>
+    </div>
+  </div>
+
+  <!-- Compass Chat Widget (Global) -->
+  <div id="compass-widget">
+    <button id="compass-btn" onclick="toggleCompass()">
+      <span style="font-size: 1.5rem;">🧭</span>
+      <span>Atlas AI</span>
+    </button>
+    <div id="compass-window">
+      <div class="compass-header">
+        <span>Atlas AI 🧭</span>
+        <span onclick="toggleCompass()" style="cursor:pointer;">&times;</span>
+      </div>
+      <div id="compass-messages">
+        <div class="msg bot">Hi! I'm Atlas. Not sure where to go? Tell me what kind of trip you're looking for! 🇮🇳
+        </div>
+      </div>
+      <div class="compass-input-area">
+        <input type="text" id="compass-input" placeholder="Type a message..." onkeypress="handleCompassKey(event)">
+        <button onclick="sendCompassMessage()">→</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="shared_ui.js"></script>
 </body>
 
 </html>

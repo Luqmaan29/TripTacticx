@@ -11,6 +11,9 @@ let currentUser = null;
 // ================= AUTH & INIT =================
 
 async function checkAuth() {
+  const landingPage = document.getElementById('landing-page');
+  const mainContainer = document.getElementById('mainContainer');
+
   try {
     const res = await fetch('/check-auth', { credentials: 'include' });
     const data = await res.json();
@@ -18,14 +21,21 @@ async function checkAuth() {
       currentUser = data.user;
       renderNavAuthenticated();
       autoFillForm();
-      document.getElementById('mainContainer').style.display = 'flex'; // Show form
+
+      // Show Dashboard, Hide Landing
+      if (landingPage) landingPage.style.display = 'none';
+      mainContainer.style.display = 'flex';
     } else {
-      // Redirect to login if not authenticated
-      window.location.href = 'login.html';
+      // Guest: Show Landing, Hide Dashboard
+      if (landingPage) landingPage.style.display = 'block';
+      mainContainer.style.display = 'none';
+      renderNavGuest();
     }
   } catch (err) {
     console.error("Auth check failed", err);
-    window.location.href = 'login.html';
+    // Default to guest view
+    if (landingPage) landingPage.style.display = 'block';
+    mainContainer.style.display = 'none';
   }
 }
 
@@ -43,9 +53,98 @@ function renderNavAuthenticated() {
   navLinks.innerHTML = navHtml;
 }
 
+function renderNavGuest() {
+  navLinks.innerHTML = `
+      <a href="#" class="nav-btn" onclick="document.getElementById('landing-page').style.display='block'; document.getElementById('mainContainer').style.display='none';">Home</a>
+      <a href="#about-section" class="nav-btn">About</a>
+      <a href="#contact-section" class="nav-btn">Contact</a>
+      <a href="login.html" class="nav-btn" style="background:var(--primary-color)">Login</a>
+    `;
+}
+
 async function logout() {
   await fetch('/logout', { method: 'POST', credentials: 'include' });
-  window.location.href = 'login.html';
+  window.location.reload();
+}
+
+// Contact Form Handler
+const contactForm = document.getElementById('contactForm');
+if (contactForm) {
+  contactForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = contactForm.querySelector('button');
+    const originalText = btn.innerText;
+    btn.innerText = 'Sending...';
+    btn.disabled = true;
+
+    const data = {
+      name: document.getElementById('contactName').value,
+      email: document.getElementById('contactEmail').value,
+      message: document.getElementById('contactMessage').value
+    };
+
+    try {
+      const res = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      if (res.ok) {
+        showSuccessModal(data.name);
+        contactForm.reset();
+      } else {
+        alert("Failed to send message.");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Error sending message.");
+    } finally {
+      if (btn) {
+        btn.innerText = originalText;
+        btn.disabled = false;
+      }
+    }
+  });
+}
+
+function showSuccessModal(name) {
+  let modal = document.getElementById('successModal');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'successModal';
+    modal.className = 'modal';
+    document.body.appendChild(modal);
+  }
+
+  const firstName = name.split(' ')[0];
+
+  modal.innerHTML = `
+        <div class="modal-content" style="max-width: 400px; text-align: center; border-color: #10b981;">
+            <div class="success-icon">✓</div>
+            <h2 style="color: white; margin-bottom: 10px;">Message Sent!</h2>
+            <p style="color: var(--text-muted); margin-bottom: 20px;">
+                Thanks, ${firstName}. We've received your query and will get back to you shortly.
+            </p>
+            <div style="height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; overflow: hidden;">
+                <div style="height: 100%; background: #10b981; width: 100%; animation: countDown 5s linear forwards;"></div>
+            </div>
+            <style>
+                @keyframes countDown { from { width: 100%; } to { width: 0%; } }
+            </style>
+        </div>
+    `;
+
+  modal.style.display = 'flex';
+
+  // Auto close after 5 seconds
+  setTimeout(() => {
+    modal.style.display = 'none';
+  }, 5000);
+
+  // Close on click outside
+  modal.onclick = (e) => {
+    if (e.target === modal) modal.style.display = 'none';
+  };
 }
 
 function autoFillForm() {
@@ -284,97 +383,26 @@ style.innerHTML = `
 `;
 document.head.appendChild(style);
 
-// ================= COMPASS CHATBOT =================
+// ================= NEWS TICKER & CHATBOT =================
+// Logic moved to shared_ui.js for global consistency.
+// shared_ui.js handles: fetchNews(), toggleCompass(), sendCompassMessage(), etc.
 
-let isCompassOpen = false;
-let chatHistory = [];
-
-function toggleCompass() {
-  const window = document.getElementById('compass-window');
-  isCompassOpen = !isCompassOpen;
-  window.style.display = isCompassOpen ? 'flex' : 'none';
-  if (isCompassOpen) {
-    document.getElementById('compass-input').focus();
-  }
-}
-
-function handleCompassKey(event) {
-  if (event.key === 'Enter') {
-    sendCompassMessage();
-  }
-}
-
-async function sendCompassMessage() {
-  const input = document.getElementById('compass-input');
-  const text = input.value.trim();
-  if (!text) return;
-
-  // Add User Message
-  appendMessage('user', text);
-  input.value = '';
-  chatHistory.push({ role: 'user', content: text });
-
-  // Add Loading Bubble
-  const loadingId = 'loading-' + Date.now();
-  const msgsDiv = document.getElementById('compass-messages');
-  msgsDiv.innerHTML += `<div id="${loadingId}" class="msg bot">...</div>`;
-  msgsDiv.scrollTop = msgsDiv.scrollHeight;
-
-  try {
-    const res = await fetch('/api/chat', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ messages: chatHistory })
-    });
-
-    const data = await res.json();
-
-    // Remove loading
-    const loader = document.getElementById(loadingId);
-    if (loader) loader.remove();
-
-    if (data.reply) {
-      appendMessage('bot', data.reply);
-      chatHistory.push({ role: 'assistant', content: data.reply });
-    } else {
-      appendMessage('bot', "Sorry, I'm having trouble connecting to the stars right now. ✨");
-    }
-
-  } catch (err) {
-    console.error(err);
-    const loader = document.getElementById(loadingId);
-    if (loader) loader.remove();
-    appendMessage('bot', "Connection error. Please try again.");
-  }
-}
-
-function appendMessage(role, text) {
-  const msgsDiv = document.getElementById('compass-messages');
-  const div = document.createElement('div');
-  div.className = `msg ${role}`;
-  // Allow simple bolding
-  div.innerHTML = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-  msgsDiv.appendChild(div);
-  msgsDiv.scrollTop = msgsDiv.scrollHeight;
-}
-
-// ================= SMART SEASON MATCHER =================
+// ================= SUGGESTIONS FEATURE =================
 
 async function suggestDestination() {
   const startDate = document.getElementById('start_date').value;
   const tripType = document.getElementById('trip_type').value;
   const btn = document.getElementById('magicBtn');
-  const destInput = document.getElementById('destination');
 
   if (!startDate) {
-    alert("Please pick a Start Date first! 📅\nI need to know *when* you are going to suggest the best weather.");
+    alert("Please select a Start Date first!");
     return;
   }
 
-  // Loading State
   const originalText = btn.innerHTML;
   btn.innerHTML = "✨ Thinking...";
   btn.disabled = true;
+  btn.style.opacity = "0.7";
 
   try {
     const res = await fetch('/api/recommend', {
@@ -383,126 +411,78 @@ async function suggestDestination() {
       body: JSON.stringify({ start_date: startDate, trip_type: tripType })
     });
 
+    if (!res.ok) throw new Error("Failed to fetch suggestions");
+
     const data = await res.json();
 
-    if (data.destination) {
-      destInput.value = data.destination;
-
-      // Visual feedback - simple toast or alert for now
-      alert(`✨ Recommendation: ${data.destination}\n\nWhy: ${data.reason}`);
+    if (data.suggestions && Array.isArray(data.suggestions)) {
+      showSuggestionsModal(data.suggestions);
     } else {
-      alert('Could not find a perfect match. Please try again.');
+      alert("Could not find suggestions. Please try again.");
     }
 
   } catch (err) {
     console.error(err);
-    alert('Magic failed. Please try again.');
+    alert("Error getting suggestions. Try again.");
   } finally {
     btn.innerHTML = originalText;
     btn.disabled = false;
+    btn.style.opacity = "1";
   }
 }
 
-// ================= MAP & SMART ACTIONS =================
-
-let mapInstance = null;
-
-async function renderSmartActions(destination, startDate, endDate, transportMode = 'Flight', sourceLocation = '') {
-  const actionContainer = document.getElementById('action-container');
-  const mapContainer = document.getElementById('map-container');
-
-  // Clear previous
-  actionContainer.innerHTML = '';
-
-  if (!destination) return;
-
-  mapContainer.style.display = 'block';
-
-  // 1. SMART BOOKING LINKS
-  let actionHtml = '';
-  // Common date formatting: YYYY-MM-DD
-  const isoDate = startDate ? startDate : new Date().toISOString().split('T')[0];
-
-  if (transportMode === 'Flight') {
-    // Skyscanner
-    const dateCode = isoDate.substr(2, 5).replace('-', '');
-    const url = `https://www.skyscanner.co.in/transport/flights-from/in/${destination}/?oym=${dateCode}`;
-    actionHtml += `
-            <a href="${url}" target="_blank" class="action-btn flight">
-                ✈️ Check Flights
-            </a>
-        `;
-  } else if (transportMode === 'Train') {
-    // ConfirmTkt or Ixigo
-    const url = `https://www.ixigo.com/trains/${sourceLocation}-to-${destination}-trains`;
-    actionHtml += `
-            <a href="${url}" target="_blank" class="action-btn hotel" style="background: linear-gradient(135deg, #2563eb, #1e40af);">
-                🚂 Check Trains
-            </a>
-        `;
-  } else if (transportMode === 'Bus') {
-    // RedBus
-    const url = `https://www.redbus.in/bus-tickets/search?fromCityName=${sourceLocation}&toCityName=${destination}&onward=${isoDate}`;
-    actionHtml += `
-            <a href="${url}" target="_blank" class="action-btn hotel" style="background: linear-gradient(135deg, #dc2626, #991b1b);">
-                🚌 Check Buses
-            </a>
-        `;
-  } else if (transportMode === 'Car') {
-    // Google Maps Directions
-    const url = `https://www.google.com/maps/dir/?api=1&origin=${sourceLocation}&destination=${destination}&travelmode=driving`;
-    actionHtml += `
-            <a href="${url}" target="_blank" class="action-btn hotel" style="background: linear-gradient(135deg, #16a34a, #15803d);">
-                🚗 View Route
-            </a>
-        `;
+function showSuggestionsModal(suggestions) {
+  // Check if modal exists, else create it
+  let modal = document.getElementById('suggestionsModal');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'suggestionsModal';
+    modal.className = 'modal';
+    document.body.appendChild(modal);
   }
 
-  // Always show Hotel link
-  const bookingUrl = `https://www.booking.com/searchresults.html?ss=${destination}&checkin=${startDate}&checkout=${endDate}`;
-  actionHtml += `
-        <a href="${bookingUrl}" target="_blank" class="action-btn hotel">
-            🏨 Find Hotels
-        </a>
+  const listHtml = suggestions.map(s => `
+        <div class="suggestion-card" onclick="selectSuggestion('${s.destination.replace(/'/g, "\\'")}')">
+            <div class="suggestion-info">
+                <span class="suggestion-dest">${s.destination}</span>
+                <span class="suggestion-reason">${s.reason}</span>
+            </div>
+            <span class="select-arrow">→</span>
+        </div>
+    `).join('');
+
+  modal.innerHTML = `
+        <div class="modal-content" style="max-width: 500px;">
+            <span class="close-button" onclick="document.getElementById('suggestionsModal').style.display='none'">&times;</span>
+            <h2 style="color: var(--primary-color); margin-bottom: 20px;">Top Picks for You ✨</h2>
+            <div class="suggestions-list">
+                ${listHtml}
+            </div>
+        </div>
     `;
 
-  actionContainer.innerHTML = actionHtml;
-
-  // 2. INTERACTIVE MAP
-  if (mapInstance) {
-    mapInstance.remove();
-    mapInstance = null;
-  }
-
-  // Geocode Destination via OSM Nominatim (Free)
-  try {
-    const geoRes = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${destination}`);
-    const geoData = await geoRes.json();
-
-    if (geoData && geoData.length > 0) {
-      const lat = geoData[0].lat;
-      const lon = geoData[0].lon;
-
-      mapInstance = L.map('map-container').setView([lat, lon], 12);
-
-      L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-        attribution: '© OpenStreetMap contributors & CartoDB'
-      }).addTo(mapInstance);
-
-      L.marker([lat, lon])
-        .addTo(mapInstance)
-        .bindPopup(`<b>${destination}</b><br>Your Adventure Starts Here!`)
-        .openPopup();
-
-      setTimeout(() => {
-        mapInstance.invalidateSize();
-      }, 100);
-
-    } else {
-      mapContainer.style.display = 'none';
-    }
-  } catch (e) {
-    console.error("Map Error", e);
-    mapContainer.style.display = 'none';
-  }
+  modal.style.display = 'flex';
 }
+
+function selectSuggestion(dest) {
+  const input = document.getElementById('destination');
+  input.value = dest;
+
+  // Highlight effect
+  input.style.borderColor = 'var(--accent-color)';
+  input.style.boxShadow = '0 0 10px rgba(16, 185, 129, 0.3)';
+  setTimeout(() => {
+    input.style.borderColor = 'var(--glass-border)';
+    input.style.boxShadow = 'none';
+  }, 1000);
+
+  document.getElementById('suggestionsModal').style.display = 'none';
+}
+
+// Close modal when clicking outside
+window.addEventListener('click', function (event) {
+  const modal = document.getElementById('suggestionsModal');
+  if (modal && event.target == modal) {
+    modal.style.display = 'none';
+  }
+});

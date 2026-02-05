@@ -6,7 +6,7 @@ from flask_cors import CORS
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from travel_agent import run_multi_agent
-from models import db, User, Trip
+from models import db, User, Trip, ContactQuery
 from io import BytesIO
 from email.message import EmailMessage
 import smtplib
@@ -552,12 +552,13 @@ def recommend_destination():
         
     client = Groq(api_key=api_key)
     
-    # Prompt for single best recommendation
+    # Prompt for top 5 recommendations
     prompt = (
-        f"Suggest the absolute best travel destination in India for a trip starting on {start_date}."
+        f"Suggest the top 5 distinct travel destinations in India for a trip starting on {start_date}."
         f"Consider the weather and season for that specific date. "
         f"The trip vibe is {trip_type}. "
-        f"Return ONLY a JSON object with keys: 'destination' (just the city/place name) and 'reason' (very short 1 sentence explanation of weather/why). "
+        f"Return ONLY a JSON object with a key 'suggestions' which is a list of 5 objects. "
+        f"Each object must have keys: 'destination' (just the city/place name) and 'reason' (very short 1 sentence explanation of weather/why). "
         f"Do not include any other text."
     )
     
@@ -572,6 +573,82 @@ def recommend_destination():
     except Exception as e:
         print(f"Recommend Error: {e}")
         return jsonify({'error': 'Could not fetch recommendation.'}), 500
+
+
+# ================= API ROUTES =================
+
+@app.route('/api/contact', methods=['POST'])
+def submit_contact():
+    data = request.json
+    name = data.get('name')
+    email = data.get('email')
+    message = data.get('message')
+
+    if not all([name, email, message]):
+        return jsonify({'error': 'All fields are required'}), 400
+    
+    # Save to DB
+    new_query = ContactQuery(name=name, email=email, message=message)
+    db.session.add(new_query)
+    db.session.commit()
+    
+    return jsonify({'message': 'Message received. We will contact you soon.'}), 201
+
+@app.route('/api/admin/messages', methods=['GET'])
+@login_required
+def get_contact_messages():
+    if not current_user.is_admin:
+        return jsonify({'error': 'Unauthorized'}), 403
+    
+    messages = ContactQuery.query.order_by(ContactQuery.created_at.desc()).all()
+    return jsonify([{
+        'id': m.id,
+        'name': m.name,
+        'email': m.email,
+        'message': m.message,
+        'created_at': m.created_at.strftime('%Y-%m-%d %H:%M')
+    } for m in messages])
+
+# News Ticker API (Previous endpoint logic here)
+@app.route('/api/news', methods=['GET'])
+def get_travel_news():
+    import requests
+    
+    # Try to get API key
+    api_key = os.environ.get('NEWS_API_KEY')
+    
+    # Mock data for fallback (or if no key)
+    mock_news = [
+        {"title": "India's Tourism Sector Expected to Grow by 15% in 2026", "source": "Travel India", "url": "#"},
+        {"title": "New Vande Bharat Trains Launched for Major Tourist Routes", "source": "Rail News", "url": "#"},
+        {"title": "Goa Becomes Top Destination for Remote Workers this Season", "source": "Nomad Life", "url": "#"},
+        {"title": "Kerala Tourism Wins Award for Responsible Travel Initiatives", "source": "World Travel Awards", "url": "#"},
+        {"title": "Visa-Free Entry for Indians Announced by 3 More Countries", "source": "Global Visa", "url": "#"}
+    ]
+
+    if not api_key:
+        return jsonify(mock_news)
+
+    # If key exists, try to fetch real news
+    try:
+        url = f"https://newsapi.org/v2/everything?q=india+tourism+travel&sortBy=publishedAt&language=en&apiKey={api_key}"
+        response = requests.get(url, timeout=5)
+        if response.status_code == 200:
+            data = response.json()
+            articles = data.get('articles', [])
+            news_items = []
+            for art in articles[:8]: # Top 8 news
+                news_items.append({
+                    "title": art.get('title'),
+                    "source": art.get('source', {}).get('name'),
+                    "url": art.get('url')
+                })
+            return jsonify(news_items)
+        else:
+            return jsonify(mock_news) # Fallback on error
+    except Exception as e:
+        print(f"News API Error: {e}")
+        return jsonify(mock_news)
 
 # ================= STATIC ROUTES =================
 
