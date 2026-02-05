@@ -419,6 +419,14 @@ textarea::-webkit-scrollbar-thumb {
 
 /* Responsive */
 @media (max-width: 768px) {
+  .hero-title {
+    font-size: 2.8rem;
+  }
+
+  .hero-buttons {
+    flex-direction: column;
+  }
+
   .form-grid {
     grid-template-columns: 1fr;
   }
@@ -431,6 +439,48 @@ textarea::-webkit-scrollbar-thumb {
     padding: 15px 20px;
     flex-direction: column;
     gap: 10px;
+  }
+
+  /* Mobile Adjustments */
+  #compass-window {
+    width: 90vw;
+    right: 5vw;
+    bottom: 90px;
+    height: 60vh;
+  }
+
+  .modal-content {
+    width: 95%;
+    padding: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero-title {
+    font-size: 2.2rem;
+    /* Even smaller for phones */
+    letter-spacing: -1px;
+  }
+
+  .section-title {
+    font-size: 2rem;
+  }
+
+  #compass-btn {
+    width: 50px;
+    min-width: 50px;
+    height: 50px;
+    padding: 0;
+    justify-content: center;
+  }
+
+  #compass-btn span:last-child {
+    display: none;
+    /* Hide 'Atlas AI' text on very small screens to save space */
+  }
+
+  .triptacticx-title {
+    font-size: 1.5rem;
   }
 }
 
