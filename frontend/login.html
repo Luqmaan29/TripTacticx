@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - TripTacticx</title>
+  <link rel="icon" type="image/png" href="logo.png">
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+  <!-- Background video removed -->
+
+  <div class="centered-container">
+    <div class="triptacticx-card" style="max-width: 400px;">
+      <div class="triptacticx-title">TRIPTACTICX</div>
+
+      <!-- Role Tabs -->
+      <div
+        style="display: flex; background: rgba(0,0,0,0.3); padding: 4px; border-radius: 12px; margin-bottom: 24px; border: 1px solid var(--glass-border);">
+        <button id="tab-traveller" class="role-tab active" onclick="switchTab('traveller')"
+          style="flex: 1; padding: 10px; border: none; background: transparent; color: white; cursor: pointer; border-radius: 8px; font-weight: 600;">Traveller</button>
+        <button id="tab-admin" class="role-tab" onclick="switchTab('admin')"
+          style="flex: 1; padding: 10px; border: none; background: transparent; color: var(--text-muted); cursor: pointer; border-radius: 8px; font-weight: 600;">Admin</button>
+      </div>
+
+      <form id="loginForm" class="form-grid" style="grid-template-columns: 1fr;">
+        <div class="form-field">
+          <label>Email</label>
+          <input type="email" id="email" required>
+        </div>
+        <div class="form-field">
+          <label>Password</label>
+          <input type="password" id="password" required>
+        </div>
+        <button type="submit" class="triptacticx-btn">Sign In</button>
+      </form>
+
+      <div style="text-align: center; margin-top: 20px;">
+        <p style="color: var(--text-muted);">Don't have an account? <a href="signup.html"
+            style="color: var(--primary-color);">Sign Up</a></p>
+      </div>
+    </div>
+  </div>
+
+  <style>
+    .role-tab.active {
+      background: var(--primary-color) !important;
+      color: black !important;
+    }
+  </style>
+
+  <script>
+    let currentRole = 'traveller';
+
+    function switchTab(role) {
+      currentRole = role;
+      document.getElementById('tab-traveller').className = role === 'traveller' ? 'role-tab active' : 'role-tab';
+      document.getElementById('tab-admin').className = role === 'admin' ? 'role-tab active' : 'role-tab';
+
+      // Visual feedback mostly, backend handles actual admin check by user record
+      const btn = document.querySelector('.triptacticx-btn');
+      btn.innerText = role === 'admin' ? 'Admin Login' : 'Sign In';
+    }
+
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+
+      try {
+        const res = await fetch('/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ email, password })
+        });
+        const data = await res.json();
+
+        if (res.ok) {
+          localStorage.setItem('user', JSON.stringify(data.user));
+          showModal('Welcome Back!', 'Login successful. Accessing dashboard...', 'success');
+
+          setTimeout(() => {
+            if (currentRole === 'admin') {
+              if (data.user.is_admin) {
+                window.location.href = 'admin.html';
+              } else {
+                showModal('Access Denied', 'You are not an admin!', 'error');
+              }
+            } else {
+              window.location.href = 'index.html';
+            }
+          }, 1500);
+
+        } else {
+          showModal('Login Failed', data.error, 'error');
+        }
+      } catch (err) {
+        showModal('Connection Error', 'Could not reach the server.', 'error');
+      }
+    });
+
+    // Check if already logged in
+    (async () => {
+      try {
+        const res = await fetch('/check-auth');
+        const data = await res.json();
+        if (data.authenticated) {
+          window.location.href = 'index.html';
+        }
+      } catch (e) { }
+    })();
+  </script>
+  <!-- News Ticker (Global) -->
+  <div id="news-ticker-bar">
+    <div class="ticker-content" id="ticker-content">
+      <span>Loading latest travel updates...</span>
+    </div>
+  </div>
+
+  <!-- Compass Chat Widget (Global) -->
+  <div id="compass-widget">
+    <button id="compass-btn" onclick="toggleCompass()">
+      <span style="font-size: 1.5rem;">🧭</span>
+      <span>Atlas AI</span>
+    </button>
+    <div id="compass-window">
+      <div class="compass-header">
+        <span>Atlas AI 🧭</span>
+        <span onclick="toggleCompass()" style="cursor:pointer;">&times;</span>
+      </div>
+      <div id="compass-messages">
+        <div class="msg bot">Hi! I'm Atlas. Not sure where to go? Tell me what kind of trip you're looking for! 🇮🇳
+        </div>
+      </div>
+      <div class="compass-input-area">
+        <input type="text" id="compass-input" placeholder="Type a message..." onkeypress="handleCompassKey(event)">
+        <button onclick="sendCompassMessage()">→</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="shared_ui.js"></script>
+</body>
+
+</html>

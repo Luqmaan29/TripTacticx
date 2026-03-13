@@ -1,0 +1,11 @@
+flask==3.0.0
+flask-cors==4.0.0
+flask-sqlalchemy
+flask-login
+werkzeug
+gunicorn
+groq
+python-dotenv
+reportlab
+email-validator
+requests
